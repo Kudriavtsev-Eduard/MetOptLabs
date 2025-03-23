@@ -1,4 +1,3 @@
-import inspect
 from typing import Callable
 
 """
@@ -21,7 +20,7 @@ class Function:
         return self.function(*args)
 
     def get_arg_count(self) -> int:
-        return 0
+        return self.function.__code__.co_argcount
 
 
 class DerivableFunction(Function):
