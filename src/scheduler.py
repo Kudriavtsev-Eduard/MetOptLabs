@@ -16,7 +16,7 @@ class Scheduler(ABC):
         return self.hyperparameters
 
 
-class ExponentialDecay(Scheduler):
+class ExponentialDecayScheduler(Scheduler):
     def __init__(self, step0: int, lamda: int):
         assert lamda > 0
         super().__init__({"step0": step0, "lamda": lamda})
@@ -32,7 +32,7 @@ beta=1
 """
 
 
-class PolynomialDecay(Scheduler):
+class PolynomialDecayScheduler(Scheduler):
     def __init__(self, alpha: int, beta: int):
         assert alpha > 0 and beta > 0
         super().__init__({"alpha": alpha, "beta": beta})
