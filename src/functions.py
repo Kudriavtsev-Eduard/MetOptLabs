@@ -19,6 +19,9 @@ class Function:
     def apply(self, *args: float) -> float:
         return self.function(*args)
 
+    def get_arg_count(self) -> int:
+        return self.function.__code__.co_argcount
+
 
 class DerivableFunction(Function):
 
