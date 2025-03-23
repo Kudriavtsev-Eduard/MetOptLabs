@@ -11,7 +11,8 @@ class GradientOptimizer:
         self.__limit = limit
 
     @staticmethod
-    def __element_wise_addition(first: tuple[float, ...], second: tuple[float, ...], multiplier: float):
+    def __element_wise_addition(first: tuple[float, ...], second: tuple[float, ...], multiplier: float) -> (
+            tuple)[float, ...]:
         assert len(first) == len(second)
         return tuple(a + multiplier * b for a, b in zip(first, second))
 
