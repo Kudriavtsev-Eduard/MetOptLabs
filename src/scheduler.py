@@ -12,7 +12,7 @@ class Scheduler(ABC):
                        func: DerivableFunction) -> float:
         pass
 
-    def get_hyper_parameters(self):
+    def get_hyper_parameters(self) -> dict[str, float]:
         return self.hyperparameters
 
 
