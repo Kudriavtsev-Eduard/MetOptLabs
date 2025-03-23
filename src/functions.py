@@ -1,7 +1,7 @@
 from typing import Callable
 
 """
-function.py
+functions.py
 Standard implementation of function classes.
 
 Example of usage:
