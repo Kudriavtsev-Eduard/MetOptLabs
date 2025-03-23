@@ -17,23 +17,16 @@ class Scheduler(ABC):
 
 
 class ExponentialDecayScheduler(Scheduler):
-    def __init__(self, step0: int, lamda: int):
-        assert lamda > 0
+    def __init__(self, step0: float, lamda: float):
+        assert lamda > 0 and step0 > 0
         super().__init__({"step0": step0, "lamda": lamda})
 
     def get_step_value(self, current_argument: tuple[float], iteration_number: int, func: DerivableFunction) -> float:
         return self.hyperparameters["step0"] * math.exp(-self.hyperparameters["lamda"] * iteration_number)
 
 
-"""
-recommended hyperparameters for PolynomialDecay:
-alpha=1/2
-beta=1
-"""
-
-
 class PolynomialDecayScheduler(Scheduler):
-    def __init__(self, alpha: int, beta: int):
+    def __init__(self, alpha: float = 1 / 2, beta: int = 1):
         assert alpha > 0 and beta > 0
         super().__init__({"alpha": alpha, "beta": beta})
 
