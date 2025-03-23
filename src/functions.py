@@ -1,3 +1,4 @@
+import inspect
 from typing import Callable
 
 """
@@ -18,6 +19,9 @@ class Function:
 
     def apply(self, *args: float) -> float:
         return self.function(*args)
+
+    def get_arg_count(self) -> int:
+        return 0
 
 
 class DerivableFunction(Function):
