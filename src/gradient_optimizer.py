@@ -2,7 +2,7 @@ from src.break_checker import BreakChecker
 from src.functions import DerivableFunction
 from src.report import Report
 from src.scheduler import Scheduler
-
+import utilities
 
 class GradientOptimizer:
     def __init__(self, scheduler: Scheduler, break_checker: BreakChecker, limit: int):
@@ -10,11 +10,6 @@ class GradientOptimizer:
         self.__break_checker = break_checker
         self.__limit = limit
 
-    @staticmethod
-    def __element_wise_addition(first: tuple[float, ...], second: tuple[float, ...], multiplier: float) -> (
-            tuple)[float, ...]:
-        assert len(first) == len(second)
-        return tuple(a + multiplier * b for a, b in zip(first, second))
 
     def optimize(self, func: DerivableFunction, starting_point: tuple[float, ...] | None = None,
                  maximum: bool = False) -> Report:
@@ -32,7 +27,7 @@ class GradientOptimizer:
 
         while (not self.__break_checker.is_done(tracking, it, func)) and it < self.__limit:
             current_point = (
-                self.__element_wise_addition(
+                utilities.element_wise_addition(
                     current_point, func.get_gradient_at(*current_point),
                     multiplier * self.__scheduler.get_step_value(current_point, it, func)
                 )
