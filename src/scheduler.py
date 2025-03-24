@@ -52,19 +52,19 @@ class DihotomyScheduler(Scheduler):
     def __dihotomy(self, func: Callable[[float], float], a: float, b: float) -> float:
         n = self.count_iterations
         for i in range(n):
-            m = DihotomyScheduler.__get_middle(a, b)
-            left_mid = DihotomyScheduler.__get_middle(a, m)
+            mid = DihotomyScheduler.__get_middle(a, b)
+            left_mid = DihotomyScheduler.__get_middle(a, mid)
 
-            val_m = abs(func(m))
+            val_m = abs(func(mid))
             val_lm = abs(func(left_mid))
             if val_lm < val_m:
-                b = m
+                b = mid
                 continue
 
-            right_mid = DihotomyScheduler.__get_middle(m, b)
+            right_mid = DihotomyScheduler.__get_middle(mid, b)
             val_rm = abs(func(right_mid))
             if val_rm < val_m:
-                a = m
+                a = mid
                 continue
             a = left_mid
             b = right_mid
@@ -74,6 +74,5 @@ class DihotomyScheduler(Scheduler):
     def get_step_value(self, current_argument: tuple[float, ...], iteration_number: int,
                        func: DerivableFunction) -> float:
 
-        func_cross_section = func.get_func_cross_section(current_argument)
         arg1, arg2 = self.indent, -self.indent
-        return self.__dihotomy(func_cross_section, arg1, arg2)
+        return self.__dihotomy(func.get_func_cross_section(current_argument), arg1, arg2)

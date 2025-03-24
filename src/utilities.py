@@ -7,11 +7,7 @@ def element_wise_addition(first: tuple[float, ...], second: tuple[float, ...], m
 
 
 def add_point(p1: tuple[float, ...], p2: tuple[float, ...]) -> tuple[float, ...]:
-    assert len(p1) == len(p2)
-    ans = []
-    for i in range(len(p1)):
-        ans.append(p1[i] + p2[i])
-    return tuple(ans)
+    return element_wise_addition(p1, p2, 1)
 
 
 def multiply(p: tuple[float, ...], scalar) -> tuple[float, ...]:
