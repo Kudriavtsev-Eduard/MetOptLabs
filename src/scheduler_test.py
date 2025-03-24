@@ -1,5 +1,5 @@
 from src.functions import DerivableFunction
-from src.scheduler import DihotomyScheduler, GolderRatioScheduler
+from src.scheduler import DichotomyScheduler, GolderRatioScheduler
 import scheduler
 import utilities
 
@@ -18,7 +18,7 @@ def test(func: DerivableFunction, arg: tuple[float, ...], scheduler: scheduler.S
     print("============================")
 
 
-dihotomy_scheduler = DihotomyScheduler(10, 20)
+dihotomy_scheduler = DichotomyScheduler(10, 20)
 
 test(DerivableFunction(lambda x, y: (x - 8) ** 2 + 100 * y ** 2, (lambda x, y: 2 * (x - 8), lambda x, y: 200 * y)),
      (5, 0), dihotomy_scheduler)
