@@ -16,6 +16,9 @@ class Scheduler(ABC):
         return {key: float(value) for key, value in self.__dict__.items() if
                 not key.startswith(Scheduler.__AUXILIARY_PREFIX)}
 
+    def get_name(self) -> str:
+        return self.__class__.__name__
+
 
 class ExponentialDecayScheduler(Scheduler):
     def __init__(self, step0: float, lamda: float) -> None:
@@ -76,3 +79,37 @@ class DihotomyScheduler(Scheduler):
 
         arg1, arg2 = self.indent, -self.indent
         return self.__dihotomy(func.get_func_cross_section(current_argument), arg1, arg2)
+
+
+class GolderRatioScheduler(Scheduler):
+    def __init__(self, indent: float, count_iterations: int) -> None:
+        self.indent = indent
+        self.count_iterations = count_iterations
+
+    def __golden_ratio(self, func: Callable[[float], float], a: float, b: float) -> float:
+        n = self.count_iterations
+        delta = b - a
+        c = a + 0.382 * delta
+        d = a + 0.618 * delta
+        val_c = abs(func(c))
+        val_d = abs(func(d))
+        for i in range(n):
+            if val_c <= val_d:
+                b = d
+                d = c
+                c = a + 0.382 * (b - a)
+                val_d, val_c = val_c, abs(func(c))
+                continue
+
+            a = c
+            c = d
+            d = a + 0.618 * (b - a)
+            val_c, val_d = val_d, abs(func(d))
+
+        return c if val_c <= val_d else d
+
+    def get_step_value(self, current_argument: tuple[float, ...], iteration_number: int,
+                       func: DerivableFunction) -> float:
+
+        arg1, arg2 = self.indent, -self.indent
+        return self.__golden_ratio(func.get_func_cross_section(current_argument), arg1, arg2)
