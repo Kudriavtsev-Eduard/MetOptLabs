@@ -50,7 +50,6 @@ class SegmentScheduler(Scheduler, ABC):
 
     def get_step_value(self, current_argument: tuple[float, ...], iteration_number: int,
                        func: DerivableFunction) -> float:
-
         arg1, arg2 = self.indent, -self.indent
         return self._min_per_segment(func.get_func_cross_section(current_argument), arg1, arg2)
 
@@ -88,30 +87,27 @@ class DichotomyScheduler(SegmentScheduler):
 
 
 class GolderRatioScheduler(SegmentScheduler):
-    def __init__(self, indent: float, count_iterations: int) -> None:
-        super().__init__(indent, count_iterations)
-        self.__left_indent = 0.382
-        self.__right_indent = 1 - self.__left_indent
+    __left_indent = 0.382
+    __right_indent = 1 - __left_indent
 
     def _min_per_segment(self, func: Callable[[float], float], a: float, b: float) -> float:
         n = self.count_iterations
         delta = b - a
-        c = a + self.__left_indent * delta
-        d = a + self.__right_indent * delta
+        c = a + GolderRatioScheduler.__left_indent * delta
+        d = a + GolderRatioScheduler.__right_indent * delta
         val_c = abs(func(c))
         val_d = abs(func(d))
         for i in range(n):
             if val_c <= val_d:
                 b = d
                 d = c
-                c = a + self.__left_indent * (b - a)
+                c = a + GolderRatioScheduler.__left_indent * (b - a)
                 val_d, val_c = val_c, abs(func(c))
                 continue
 
             a = c
             c = d
-            d = a + self.__right_indent * (b - a)
+            d = a + GolderRatioScheduler.__right_indent * (b - a)
             val_c, val_d = val_d, abs(func(d))
 
         return c if val_c <= val_d else d
-
