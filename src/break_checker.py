@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from abc import ABC
 from typing import Callable
 
@@ -5,6 +6,7 @@ from src.functions import DerivableFunction
 from src.utilities import element_wise_addition, norm
 
 
+@dataclass
 class BreakChecker(ABC):
     __epsilon: float
     __desired_length: int
