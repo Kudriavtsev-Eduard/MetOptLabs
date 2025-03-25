@@ -90,7 +90,7 @@ class Report:
                 header=table_header,
                 cells=table_cells,
                 columnwidth=[left_max_proportion, right_max_proportion]))
-            )
+        )
         fig.update_layout(autosize=True)
         fig.show()
 
