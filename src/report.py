@@ -61,36 +61,36 @@ class Report:
         left_max_proportion = self._get_max_column_proportion(table_values, 0)
         right_max_proportion = self._get_max_column_proportion(table_values, 1)
         fig = (go.Figure()
-        .add_trace(go.Surface(
-            x=list(self._display_range),
-            y=list(self._display_range),
-            z=z_rangevalues,
-            colorscale='Sunsetdark',
-            contours={
-                "z": {
-                    "show": True,
-                    "start": min(map(min, z_rangevalues)),
-                    "end": max(map(max, z_rangevalues)),
-                    "size": 5
-                }
-            },
-            opacity=0.5)
-        )
-        .add_trace(go.Scatter3d(
-            x=x_values,
-            y=y_values,
-            z=[self._func.apply(x, y) for x, y in self._tracking],
-            mode='markers+lines',
-            marker=dict(size=7, color='royalblue', symbol=markers),
-            line=dict(width=7, color='royalblue'))
-        )
-        .add_trace(go.Table(
-            domain=dict(x=[table_alignment_x, table_alignment_x + (left_max_proportion + right_max_proportion) / 200],
-                        y=[0.5, 1]),
-            header=table_header,
-            cells=table_cells,
-            columnwidth=[left_max_proportion, right_max_proportion]))
-        )
+            .add_trace(go.Surface(
+                x=list(self._display_range),
+                y=list(self._display_range),
+                z=z_rangevalues,
+                colorscale='Sunsetdark',
+                contours={
+                    "z": {
+                        "show": True,
+                        "start": min(map(min, z_rangevalues)),
+                        "end": max(map(max, z_rangevalues)),
+                        "size": 5
+                    }
+                },
+                opacity=0.5)
+            )
+            .add_trace(go.Scatter3d(
+                x=x_values,
+                y=y_values,
+                z=[self._func.apply(x, y) for x, y in self._tracking],
+                mode='markers+lines',
+                marker=dict(size=7, color='royalblue', symbol=markers),
+                line=dict(width=7, color='royalblue'))
+            )
+            .add_trace(go.Table(
+                domain=dict(x=[table_alignment_x, table_alignment_x + (left_max_proportion + right_max_proportion) / 200],
+                            y=[0.5, 1]),
+                header=table_header,
+                cells=table_cells,
+                columnwidth=[left_max_proportion, right_max_proportion]))
+            )
         fig.update_layout(autosize=True)
         fig.show()
 
