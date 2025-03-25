@@ -87,27 +87,27 @@ class DichotomyScheduler(SegmentScheduler):
 
 
 class GolderRatioScheduler(SegmentScheduler):
-    __left_indent = 0.382
-    __right_indent = 1 - __left_indent
+    __LEFT_INDENT = 0.382
+    __RIGHT_INDENT = 1 - __LEFT_INDENT
 
     def _min_per_segment(self, func: Callable[[float], float], a: float, b: float) -> float:
         n = self.count_iterations
         delta = b - a
-        c = a + GolderRatioScheduler.__left_indent * delta
-        d = a + GolderRatioScheduler.__right_indent * delta
+        c = a + GolderRatioScheduler.__LEFT_INDENT * delta
+        d = a + GolderRatioScheduler.__RIGHT_INDENT * delta
         val_c = abs(func(c))
         val_d = abs(func(d))
         for i in range(n):
             if val_c <= val_d:
                 b = d
                 d = c
-                c = a + GolderRatioScheduler.__left_indent * (b - a)
+                c = a + GolderRatioScheduler.__LEFT_INDENT * (b - a)
                 val_d, val_c = val_c, abs(func(c))
                 continue
 
             a = c
             c = d
-            d = a + GolderRatioScheduler.__right_indent * (b - a)
+            d = a + GolderRatioScheduler.__RIGHT_INDENT * (b - a)
             val_c, val_d = val_d, abs(func(d))
 
         return c if val_c <= val_d else d
