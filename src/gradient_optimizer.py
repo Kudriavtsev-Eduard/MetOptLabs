@@ -4,12 +4,12 @@ from src.report import Report
 from src.scheduler import Scheduler
 import utilities
 
+
 class GradientOptimizer:
     def __init__(self, scheduler: Scheduler, break_checker: BreakChecker, limit: int):
         self.__scheduler = scheduler
         self.__break_checker = break_checker
         self.__limit = limit
-
 
     def optimize(self, func: DerivableFunction, starting_point: tuple[float, ...] | None = None,
                  maximum: bool = False) -> Report:
@@ -25,7 +25,7 @@ class GradientOptimizer:
 
         it = 0
 
-        while (not self.__break_checker.is_done(tracking, it, func)) and it < self.__limit:
+        while (not self.__break_checker.is_done(tracking, func)) and it < self.__limit:
             current_point = (
                 utilities.element_wise_addition(
                     current_point, func.get_gradient_at(*current_point),
