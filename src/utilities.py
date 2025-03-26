@@ -1,3 +1,4 @@
+import math
 
 
 def element_wise_addition(first: tuple[float, ...], second: tuple[float, ...], multiplier: float) -> (
@@ -14,3 +15,5 @@ def multiply(p: tuple[float, ...], scalar) -> tuple[float, ...]:
     return tuple(scalar * a for a in p)
 
 
+def norm(vec: tuple[float, ...]):
+    return math.sqrt(sum(map(lambda x: x ** 2, vec)))
