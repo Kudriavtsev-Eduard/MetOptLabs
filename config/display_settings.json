@@ -1,0 +1,41 @@
+{
+  "table": {
+    "header": {
+      "values": [
+        "<b>Parameter</b>",
+        "<b>Value</b>"
+      ],
+      "fill_color": "lightblue",
+      "align": "center"
+    },
+    "fill_color": "lavender",
+    "align": "left",
+    "x_alignment": 0.05,
+    "y_domain": [
+      0.5,
+      1
+    ]
+  },
+  "graph": {
+    "display_range_bounds": [
+      -10,
+      10
+    ],
+    "colorscale": "Sunsetdark",
+    "level_line_indent": 5,
+    "opacity": 0.5
+  },
+  "trace": {
+    "default_marker": "circle",
+    "special_marker": "diamond",
+    "scatter_mode": "markers+lines",
+    "marker_params": {
+      "size": 7,
+      "color": "royalblue"
+    },
+    "line_params": {
+      "width": 7,
+      "color": "royalblue"
+    }
+  }
+}
