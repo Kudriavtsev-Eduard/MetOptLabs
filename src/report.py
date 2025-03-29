@@ -54,9 +54,9 @@ class Report:
     def _build_3d_graph(self) -> None:
         fig = (
             go.Figure()
+            .add_trace(self._get_table(self._get_settings("table")))
             .add_trace(self._get_graph(self._get_settings("graph")))
             .add_trace(self._get_trace(self._get_settings("trace")))
-            .add_trace(self._get_table(self._get_settings("table")))
         )
         fig.update_layout(autosize=True)
         fig.show()
