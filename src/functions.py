@@ -1,3 +1,4 @@
+import random
 from copy import deepcopy
 from typing import Callable
 import utilities
@@ -24,9 +25,6 @@ class Function:
     def get_arg_count(self) -> int:
         return self.function.__code__.co_argcount
 
-    def unwrap(self) -> Callable[..., float]:
-        return self.function
-
 
 class DerivableFunction(Function):
     def __init__(self, function: Callable[..., float], gradient: tuple[Callable[..., float], ...]):
@@ -46,14 +44,33 @@ class DerivableFunction(Function):
 
 
 class AutomatedDerivableFunction(DerivableFunction):
+    _DEFAULT_EPSILON = 10 ** -8
+
     @staticmethod
     def __get_partial(function: Function, x: tuple[float, ...], coord: int, epsilon: float):
         x_shift = x[:coord] + (x[coord] + epsilon,) + x[coord + 1:]
         return (function.apply(*x_shift) - function.apply(*x)) / epsilon
 
-    def __init__(self, function: Function, epsilon: float = 10 ** -8):
-        super().__init__(function.unwrap(),
+    def __init__(self, function: Function, epsilon: float = _DEFAULT_EPSILON):
+        super().__init__(function.apply,
                          tuple(
                              lambda *x: AutomatedDerivableFunction.__get_partial(function, x, i, epsilon)
                              for i in range(function.get_arg_count()))
                          )
+
+
+class NoiseFunction(Function):
+    def __init__(self, function: Callable[..., float], creativity: float = 1):
+        assert creativity > 0
+        super().__init__(function)
+        self.cache: dict[tuple[float, ...], float] = dict()
+        self.creativity = creativity
+
+    def apply(self, *args: float) -> float:
+        result = super().apply(*args)
+        if args in self.cache:
+            offset = self.cache[args]
+        else:
+            offset = random.random() * (-1 ** random.randint(0, 1)) * self.creativity
+            self.cache[args] = offset
+        return result + offset
