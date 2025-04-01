@@ -44,14 +44,13 @@ class DerivableFunction(Function):
 
 
 class AutomatedDerivableFunction(DerivableFunction):
-    _DEFAULT_EPSILON = 10 ** -8
 
     @staticmethod
     def __get_partial(function: Function, x: tuple[float, ...], coord: int, epsilon: float):
         x_shift = x[:coord] + (x[coord] + epsilon,) + x[coord + 1:]
         return (function.apply(*x_shift) - function.apply(*x)) / epsilon
 
-    def __init__(self, function: Function, epsilon: float = _DEFAULT_EPSILON):
+    def __init__(self, function: Function, epsilon: float = 10 ** -8):
         super().__init__(function.apply,
                          tuple(
                              lambda *x: AutomatedDerivableFunction.__get_partial(function, x, i, epsilon)
