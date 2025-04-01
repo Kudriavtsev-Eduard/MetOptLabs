@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import Callable
 import utilities
 
@@ -13,15 +14,18 @@ Example of usage:
 
 
 class Function:
-
     def __init__(self, function: Callable[..., float]):
         self.function = function
 
     def apply(self, *args: float) -> float:
+        assert self.get_arg_count() == len(args)
         return self.function(*args)
 
     def get_arg_count(self) -> int:
         return self.function.__code__.co_argcount
+
+    def unwrap(self) -> Callable[..., float]:
+        return self.function
 
 
 class DerivableFunction(Function):
@@ -39,3 +43,18 @@ class DerivableFunction(Function):
             return self.apply(*(utilities.element_wise_addition(current_argument, antigravity, t)))
 
         return evaluteF1D
+
+
+class AutomatedDerivableFunction(DerivableFunction):
+    @staticmethod
+    def __get_partial(function: Function, x: tuple[float, ...], coord: int, epsilon: float):
+        assert coord < len(x) and epsilon > 0 and function.get_arg_count() == len(x)
+        x_shift = x[:coord] + (x[coord] + epsilon,) + x[coord + 1:]
+        return (function.apply(*x_shift) - function.apply(*x)) / epsilon
+
+    def __init__(self, function: Function, epsilon: float = 10 ** -8):
+        super().__init__(function.unwrap(),
+                         tuple(
+                             lambda *x: AutomatedDerivableFunction.__get_partial(function, x, i, epsilon)
+                             for i in range(function.get_arg_count()))
+                         )
