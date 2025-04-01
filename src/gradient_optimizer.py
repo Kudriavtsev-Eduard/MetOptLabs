@@ -35,4 +35,5 @@ class GradientOptimizer:
             tracking.append(current_point)
             it += 1
 
-        return Report(func, tuple(tracking), it == self.__limit, self.__scheduler.get_hyper_parameters())
+        return Report(func, tracking, it == self.__limit,
+                      self.__scheduler.get_hyper_parameters(), self.__scheduler.get_name())
