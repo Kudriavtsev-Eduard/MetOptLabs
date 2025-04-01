@@ -56,10 +56,14 @@ class AutomatedDerivableFunction(DerivableFunction):
                              lambda *x: AutomatedDerivableFunction.__get_partial(function, x, i, epsilon)
                              for i in range(function.get_arg_count()))
                          )
+        self.__arg_count = function.get_arg_count()
+
+    def get_arg_count(self) -> int:
+        return self.__arg_count
 
 
 class NoiseFunction(Function):
-    def __init__(self, function: Callable[..., float], creativity: float = 1):
+    def __init__(self, function: Callable[..., float], creativity: int = 20):
         assert creativity > 0
         super().__init__(function)
         self.cache: dict[tuple[float, ...], float] = dict()
@@ -70,6 +74,6 @@ class NoiseFunction(Function):
         if args in self.cache:
             offset = self.cache[args]
         else:
-            offset = random.random() * (-1 ** random.randint(0, 1)) * self.creativity
+            offset = (random.randint(-self.creativity, self.creativity)+random.random())
             self.cache[args] = offset
         return result + offset
