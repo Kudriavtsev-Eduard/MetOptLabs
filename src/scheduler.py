@@ -65,23 +65,33 @@ class DichotomyScheduler(SegmentScheduler):
 
     def _min_per_segment(self, func: Callable[[float], float], a: float, b: float) -> float:
         n = self.count_iterations
+        calc = True
         for i in range(n):
-            mid = DichotomyScheduler.__get_middle(a, b)
-            left_mid = DichotomyScheduler.__get_middle(a, mid)
+            if calc:
+                mid = DichotomyScheduler.__get_middle(a, b)
+                val_m = func(mid)
 
-            val_m = abs(func(mid))
-            val_lm = abs(func(left_mid))
+            left_mid = DichotomyScheduler.__get_middle(a, mid)
+            val_lm = func(left_mid)
             if val_lm < val_m:
                 b = mid
+                mid = left_mid
+                val_m = val_lm
+                calc = False
                 continue
 
             right_mid = DichotomyScheduler.__get_middle(mid, b)
-            val_rm = abs(func(right_mid))
+            val_rm = func(right_mid)
             if val_rm < val_m:
                 a = mid
+                mid = right_mid
+                val_m = val_rm
+                calc = False
                 continue
+
             a = left_mid
             b = right_mid
+            calc = True
 
         return DichotomyScheduler.__get_middle(a, b)
 
@@ -95,19 +105,19 @@ class GolderRatioScheduler(SegmentScheduler):
         delta = b - a
         c = a + GolderRatioScheduler.__LEFT_INDENT * delta
         d = a + GolderRatioScheduler.__RIGHT_INDENT * delta
-        val_c = abs(func(c))
-        val_d = abs(func(d))
+        val_c = func(c)
+        val_d = func(d)
         for i in range(n):
             if val_c <= val_d:
                 b = d
                 d = c
                 c = a + GolderRatioScheduler.__LEFT_INDENT * (b - a)
-                val_d, val_c = val_c, abs(func(c))
+                val_d, val_c = val_c, func(c)
                 continue
 
             a = c
             c = d
             d = a + GolderRatioScheduler.__RIGHT_INDENT * (b - a)
-            val_c, val_d = val_d, abs(func(d))
+            val_c, val_d = val_d, func(d)
 
         return c if val_c <= val_d else d
