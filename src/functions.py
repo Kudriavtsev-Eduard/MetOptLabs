@@ -48,7 +48,6 @@ class DerivableFunction(Function):
 class AutomatedDerivableFunction(DerivableFunction):
     @staticmethod
     def __get_partial(function: Function, x: tuple[float, ...], coord: int, epsilon: float):
-        assert coord < len(x) and epsilon > 0 and function.get_arg_count() == len(x)
         x_shift = x[:coord] + (x[coord] + epsilon,) + x[coord + 1:]
         return (function.apply(*x_shift) - function.apply(*x)) / epsilon
 
