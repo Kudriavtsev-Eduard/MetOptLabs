@@ -65,23 +65,33 @@ class DichotomyScheduler(SegmentScheduler):
 
     def _min_per_segment(self, func: Callable[[float], float], a: float, b: float) -> float:
         n = self.count_iterations
+        calc = True
         for i in range(n):
-            mid = DichotomyScheduler.__get_middle(a, b)
-            left_mid = DichotomyScheduler.__get_middle(a, mid)
+            if calc:
+                mid = DichotomyScheduler.__get_middle(a, b)
+                val_m = func(mid)
 
-            val_m = func(mid)
+            left_mid = DichotomyScheduler.__get_middle(a, mid)
             val_lm = func(left_mid)
             if val_lm < val_m:
                 b = mid
+                mid = left_mid
+                val_m = val_lm
+                calc = False
                 continue
 
             right_mid = DichotomyScheduler.__get_middle(mid, b)
             val_rm = func(right_mid)
             if val_rm < val_m:
                 a = mid
+                mid = right_mid
+                val_m = val_rm
+                calc = False
                 continue
+
             a = left_mid
             b = right_mid
+            calc = True
 
         return DichotomyScheduler.__get_middle(a, b)
 
