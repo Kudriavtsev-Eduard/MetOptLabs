@@ -38,9 +38,12 @@ class Report:
     def get_raw_tracking(self) -> list[tuple[float, ...]]:
         return self._tracking
 
+    def _format_point(self, point: tuple[float, ...]):
+        return "(" + ", ".join(map(lambda flt: self._format_precision(flt), point)) + ")"
+
     @staticmethod
-    def _format_point(point: tuple[float, ...]):
-        return "(" + ", ".join(map(str, point)) + ")"
+    def _format_precision(value: float) -> str:
+        return "{:.3f}".format(value).rstrip("0").rstrip(".")
 
     @staticmethod
     def _get_max_column_proportion(lst: list[list[str]], column: int) -> int:
@@ -85,12 +88,12 @@ class Report:
         table_values = [
             ["Iterations", f"{len(self._tracking) - 1}"],
             ["Begin point", self._format_point(self._tracking[0])],
-            ["Begin F", f"{self._func.apply(*self._tracking[0])}"],
-            ["Min F", f"{self._func.apply(*self._tracking[-1])}"],
+            ["Begin F", self._format_precision(self._func.apply(*self._tracking[0]))],
+            ["Min F", self._format_precision(self._func.apply(*self._tracking[-1]))],
             ["Argmin F", self._format_point(self._tracking[-1])],
             ["Strategy", self._strategy_name],
             ["Aborted?", "YES" if self._is_aborted else "NO"],
-            ["Hyperparameters", ", ".join(f"{k}={v}" for k, v in self._hyperparameters.items())]
+            ["Hyperparameters", ", ".join(f"{k}={self._format_precision(v)}" for k, v in self._hyperparameters.items())]
         ]
 
         x_alignment = settings["x_alignment"]
