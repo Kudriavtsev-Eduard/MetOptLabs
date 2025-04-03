@@ -13,8 +13,9 @@ def main():
 
     func: DerivableFunction = AutomatedDerivableFunction(
         Function(lambda x, y: x ** 2 + y ** 2))  # Create function to optimize
+    start_point: tuple[float, float] = (10, 10) # Create starting point for algorithm
 
-    report: Report = optimizer.optimize(func)  # Create report about optimization process
+    report: Report = optimizer.optimize(func, start_point)  # Create report about optimization process
 
     report.display()  # Display the report in form of a 3D graph
 
