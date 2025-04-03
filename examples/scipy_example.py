@@ -7,13 +7,13 @@ from src.report import Report
 
 def func(args, *_):
     x, y = args
-    return x ** 4 + 4 * x ** 2 * y ** 2 + 3 * y ** 3 + 8 * y ** 4
+    return 4 * x ** 2 + y ** 2 + 3 * y
 
 
 def grad(args, *_):
     x, y = args
-    dx = 4 * x ** 3 + 8 * x * y ** 2
-    dy = 8 * x ** 2 * y + 9 * y ** 2 + 32 * y ** 3
+    dx = 8 * x
+    dy = 2 * y + 3
     return numpy.asarray((dx, dy))
 
 
