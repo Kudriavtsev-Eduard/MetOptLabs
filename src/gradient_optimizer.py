@@ -11,11 +11,10 @@ class GradientOptimizer:
         self.__break_checker = break_checker
         self.__limit = limit
 
-    def optimize(self, func: DerivableFunction, starting_point: tuple[float, ...] | None = None,
-                 maximum: bool = False) -> Report:
+    def optimize(self, func: DerivableFunction, starting_point: tuple[float, ...] | None = None) -> Report:
         assert starting_point is None or len(starting_point) == func.get_arg_count()
 
-        multiplier = 1 if maximum else -1
+        multiplier = -1
 
         if starting_point is None:
             current_point: tuple[float, ...] = tuple([0] * func.get_arg_count())
