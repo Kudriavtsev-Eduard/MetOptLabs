@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Callable
 
-from functions import DerivableFunction
+from src.functions import DerivableFunction
 import math
 
 
