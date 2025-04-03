@@ -2,7 +2,7 @@ from src.break_checker import BreakChecker
 from src.functions import DerivableFunction
 from src.report import Report
 from src.scheduler import Scheduler
-import utilities
+import src.utilities as utilities
 
 
 class GradientOptimizer:

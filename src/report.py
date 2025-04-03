@@ -4,7 +4,7 @@ from typing import Any
 import plotly.graph_objects as go
 import json
 
-from functions import Function
+from src.functions import Function
 
 """
 report.py
@@ -62,7 +62,7 @@ class Report:
             .add_trace(self._get_trace(self._get_settings("trace")))
         )
         fig.update_layout(autosize=True)
-        fig.show()
+        fig.show(renderer="browser")
 
     def _get_graph(self, settings: dict[str, Any]) -> go.Surface:
         var_range = range(*settings["display_range_bounds"])
@@ -128,7 +128,6 @@ class Report:
             marker=marker_settings,
             line=settings["line_params"]
         )
-
 
 # report = Report(Function(
 #     lambda x, y: 0.1 * x ** 2 + 3 * y ** 2), [(4, 8), (3, 5), (3, 4), (1, 2), (0, 0)], True, {"a": 5.33, "b": 6.33},

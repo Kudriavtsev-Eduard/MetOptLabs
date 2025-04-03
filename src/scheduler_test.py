@@ -1,13 +1,13 @@
 from src.functions import DerivableFunction
-from src.scheduler import DichotomyScheduler, GolderRatioScheduler
-import scheduler
-import utilities
+from src.scheduler import DichotomyScheduler, GolderRatioScheduler, Scheduler
+import src.utilities as utilities
 
 """
     Testing function for scheduler
 """
 
-def test(func: DerivableFunction, arg: tuple[float, ...], scheduler: scheduler.Scheduler):
+
+def test(func: DerivableFunction, arg: tuple[float, ...], scheduler: Scheduler):
     print("test of scheduler:", scheduler.get_name())
     print("Start:", arg, "Value:", func.apply(*arg))
     h = scheduler.get_step_value(arg, 0, func)
@@ -29,8 +29,6 @@ test(DerivableFunction(lambda x, y: (x - 8) ** 2 + 100 * y ** 2, (lambda x, y: 2
 test(DerivableFunction(lambda x, y: 0.01 * x ** 2 + 10 * y ** 2, (lambda x, y: 0.02 * x, lambda x, y: 20 * y)),
      (11, -12), dihotomy_scheduler)
 
-
-
 golden_scheduler = GolderRatioScheduler(10, 20)
 
 test(DerivableFunction(lambda x, y: (x - 8) ** 2 + 100 * y ** 2, (lambda x, y: 2 * (x - 8), lambda x, y: 200 * y)),
@@ -41,5 +39,3 @@ test(DerivableFunction(lambda x, y: (x - 8) ** 2 + 100 * y ** 2, (lambda x, y: 2
 
 test(DerivableFunction(lambda x, y: 0.01 * x ** 2 + 10 * y ** 2, (lambda x, y: 0.02 * x, lambda x, y: 20 * y)),
      (11, -12), golden_scheduler)
-
-

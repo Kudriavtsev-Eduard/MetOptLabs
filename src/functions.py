@@ -1,7 +1,6 @@
 import random
-from copy import deepcopy
 from typing import Callable
-import utilities
+import src.utilities as utilities
 
 """
 functions.py
