@@ -62,7 +62,7 @@ class Report:
             .add_trace(self._get_trace(self._get_settings("trace")))
         )
         fig.update_layout(autosize=True)
-        fig.show()
+        fig.show(renderer="browser")
 
     def _get_graph(self, settings: dict[str, Any]) -> go.Surface:
         var_range = range(*settings["display_range_bounds"])
