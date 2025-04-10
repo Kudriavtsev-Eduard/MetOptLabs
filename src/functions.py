@@ -16,21 +16,37 @@ Example of usage:
 class Function:
     def __init__(self, function: Callable[..., float]):
         self.function = function
+        self.tracking = False
+        self.times_used = 0
 
     def apply(self, *args: float) -> float:
+        if self.tracking:
+            self.times_used += 1
         assert self.get_arg_count() == len(args)
         return self.function(*args)
 
     def get_arg_count(self) -> int:
         return self.function.__code__.co_argcount
 
+    def start_tracking(self):
+        self.tracking = True
+
+    def stop_tracking(self):
+        self.tracking = False
+
+    def get_times_used(self):
+        return self.times_used
+
 
 class DerivableFunction(Function):
     def __init__(self, function: Callable[..., float], gradient: tuple[Callable[..., float], ...]):
         super().__init__(function)
         self.gradient = gradient
+        self.times_gradient_used = False
 
     def get_gradient_at(self, *args: float) -> tuple[float, ...]:
+        if self.tracking:
+            self.times_gradient_used += 1
         return tuple(dF(*args) for dF in self.gradient)
 
     def get_func_cross_section(self, current_argument: tuple[float, ...]) -> Callable[[float], float]:
@@ -40,6 +56,9 @@ class DerivableFunction(Function):
             return self.apply(*(utilities.element_wise_addition(current_argument, antigravity, t)))
 
         return evaluteF1D
+
+    def get_times_gradient_used(self):
+        return self.times_gradient_used
 
 
 class AutomatedDerivableFunction(DerivableFunction):
@@ -73,6 +92,6 @@ class NoiseFunction(Function):
         if args in self.cache:
             offset = self.cache[args]
         else:
-            offset = (random.randint(-self.creativity, self.creativity)+random.random())
+            offset = (random.randint(-self.creativity, self.creativity) + random.random())
             self.cache[args] = offset
         return result + offset

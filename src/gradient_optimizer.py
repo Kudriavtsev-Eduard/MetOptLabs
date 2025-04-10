@@ -13,6 +13,7 @@ class GradientOptimizer:
 
     def optimize(self, func: DerivableFunction, starting_point: tuple[float, ...] | None = None) -> Report:
         assert starting_point is None or len(starting_point) == func.get_arg_count()
+        func.start_tracking()
 
         multiplier = -1
 
@@ -33,6 +34,6 @@ class GradientOptimizer:
             )
             tracking.append(current_point)
             it += 1
-
+        func.stop_tracking()
         return Report(func, tracking, it == self.__limit,
                       self.__scheduler.get_hyper_parameters(), self.__scheduler.get_name())
