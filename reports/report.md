@@ -119,7 +119,7 @@
 
 [результат](#результат-5)
 
-![1_p_golden_ratio_good](../resources/graph_pictures/base/1_polynomial/goldenratio_good2.png)
+![1_p_golden_ratio_good](../resources/graph_pictures/base/1_polynomial/goldenratio_good.png)
 
 
 ### График 6 (Scipy): $f(x, y) = 0.65 \cdot  (x - 21)^2 + 1.1 \cdot  (y + 37)^2 - 7 \cdot  x + 12 \cdot  y - 15$
