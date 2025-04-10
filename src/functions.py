@@ -28,14 +28,14 @@ class Function:
     def get_arg_count(self) -> int:
         return self.function.__code__.co_argcount
 
-    def start_tracking(self):
+    def start_tracking(self) -> None:
         self.tracking = True
 
-    def stop_tracking(self):
+    def stop_tracking(self) -> None:
         self.tracking = False
 
-    def get_times_used(self):
-        return self.times_used
+    def get_call_data(self) -> dict[str, int]:
+        return {"to_function": self.times_used}
 
 
 class DerivableFunction(Function):
@@ -57,8 +57,10 @@ class DerivableFunction(Function):
 
         return evaluteF1D
 
-    def get_times_gradient_used(self):
-        return self.times_gradient_used
+    def get_call_data(self) -> dict[str, int]:
+        result = super().get_call_data()
+        result["to_gradient"] = self.times_gradient_used
+        return result
 
 
 class AutomatedDerivableFunction(DerivableFunction):

@@ -87,7 +87,7 @@ class Report:
     def _get_table(self, settings: dict[str, Any]) -> go.Table:
         table_values = [
             ["Iterations", f"{len(self._tracking) - 1}"],
-            ["Calls to function", f"{self._func.get_times_used()}"],
+            ["Function call data", f"{", ".join(f"{k}={v}" for k, v in self._func.get_call_data().items())}"],
             ["Begin point", self._format_point(self._tracking[0])],
             ["Begin F", self._format_precision(self._func.apply(*self._tracking[0]))],
             ["Min F", self._format_precision(self._func.apply(*self._tracking[-1]))],
