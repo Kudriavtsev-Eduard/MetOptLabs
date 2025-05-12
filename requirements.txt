@@ -1,3 +1,9 @@
 plotly~=6.0.1
 scipy~=1.15.2
 numpy~=2.2.4
+matplotlib>=3.4.0
+rasterio>=1.2.0
+requests>=2.25.0
+elevation>=1.1.0
+flask-cors==4.0.0
+urllib3~=2.4.0
