@@ -35,8 +35,8 @@ class Report:
             case _:
                 raise NotImplementedError("Report supports only functions with 2 args.")
 
-    def get_raw_tracking(self) -> list[tuple[float, ...]]:
-        return self._tracking
+    def get_raw_tracking(self) -> dict[tuple[float, ...], float]:
+        return {args: self._func.apply(*args) for args in self._tracking}
 
     def _format_point(self, point: tuple[float, ...]):
         return "(" + ", ".join(map(lambda flt: self._format_precision(flt), point)) + ")"

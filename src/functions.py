@@ -18,12 +18,13 @@ class Function:
         self.function = function
         self.tracking = False
         self.times_used = 0
+        self.negate_multiplier = 1
 
     def apply(self, *args: float) -> float:
         if self.tracking:
             self.times_used += 1
         assert self.get_arg_count() == len(args)
-        return self.function(*args)
+        return self.function(*args) * self.negate_multiplier
 
     def get_arg_count(self) -> int:
         return self.function.__code__.co_argcount
@@ -37,6 +38,9 @@ class Function:
     def get_call_data(self) -> dict[str, int]:
         return {"to_function": self.times_used}
 
+    def negate(self) -> None:
+        self.negate_multiplier *= -1
+
 
 class DerivableFunction(Function):
     def __init__(self, function: Callable[..., float], gradient: tuple[Callable[..., float], ...]):
@@ -47,7 +51,7 @@ class DerivableFunction(Function):
     def get_gradient_at(self, *args: float) -> tuple[float, ...]:
         if self.tracking:
             self.times_gradient_used += 1
-        return tuple(dF(*args) for dF in self.gradient)
+        return tuple(dF(*args) * self.negate_multiplier for dF in self.gradient)
 
     def get_func_cross_section(self, current_argument: tuple[float, ...]) -> Callable[[float], float]:
         antigravity = utilities.multiply(self.get_gradient_at(*current_argument), -1)
@@ -82,18 +86,20 @@ class AutomatedDerivableFunction(DerivableFunction):
         return self.__arg_count
 
 
-class NoiseFunction(Function):
-    def __init__(self, function: Callable[..., float], creativity: int = 20):
-        assert creativity > 0
+class CachedFunction(Function):
+    def __init__(self, function: Callable[..., float]):
         super().__init__(function)
         self.cache: dict[tuple[float, ...], float] = dict()
-        self.creativity = creativity
 
     def apply(self, *args: float) -> float:
-        result = super().apply(*args)
         if args in self.cache:
-            offset = self.cache[args]
-        else:
-            offset = (random.randint(-self.creativity, self.creativity) + random.random())
-            self.cache[args] = offset
-        return result + offset
+            return self.cache[args]
+        result = super().apply(*args)
+        self.cache[args] = result
+        return result
+
+
+class NoiseFunction(CachedFunction):
+    def __init__(self, function: Callable[..., float], creativity: int = 20):
+        assert creativity > 0
+        super().__init__(lambda *args: function(**args) + (random.randint(-creativity, creativity) + random.random()))

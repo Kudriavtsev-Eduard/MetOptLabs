@@ -18,6 +18,7 @@ class TerrainClient:
                      model_name: str = None) -> bool:
         if not self.__check_server():
             return False
+        print("Creating model...")
         if model_name is None:
             model_name = self.__get_default_model_name(lat, lon)
         payload = {
@@ -131,22 +132,3 @@ class TerrainClient:
         if response is not None:
             return response.json().get("elevation", None)
         return None
-
-
-if __name__ == "__main__":
-    client = TerrainClient()
-
-    success = client.create_model(
-        lat=43.0,
-        lon=42.0,
-        lat_end=44.0,
-        lon_end=43.0,
-        model_name="Caucasus"
-    )
-
-    if not success:
-        exit(1)
-
-    elevation = client.get_elevation(43.35, 42.45)
-    if elevation is not None:
-        print(f"Высота Эльбруса: {elevation} метров")
