@@ -53,3 +53,8 @@ class GradientRelativeBreakChecker(GradientAbsoluteBreakChecker):
     def __init__(self, epsilon: float):
         super().__init__(epsilon)
         self._relativity_function = lambda x, func: norm(func.get_gradient_at(*x)) ** 2
+
+
+class NeverBreakChecker(ArgumentAbsoluteBreakChecker):
+    def __init__(self):
+        super().__init__(0)

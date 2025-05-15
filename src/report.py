@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Tuple
 
 import plotly.graph_objects as go
 import json
@@ -35,8 +35,8 @@ class Report:
             case _:
                 raise NotImplementedError("Report supports only functions with 2 args.")
 
-    def get_raw_tracking(self) -> dict[tuple[float, ...], float]:
-        return {args: self._func.apply(*args) for args in self._tracking}
+    def get_raw_tracking(self) -> tuple[tuple[tuple[float, ...], float], ...]:
+        return tuple((args, self._func.apply(*args)) for args in self._tracking)
 
     def _format_point(self, point: tuple[float, ...]):
         return "(" + ", ".join(map(lambda flt: self._format_precision(flt), point)) + ")"
