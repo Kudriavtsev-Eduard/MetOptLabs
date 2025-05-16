@@ -23,7 +23,6 @@ class Function:
     def apply(self, *args: float) -> float:
         if self.tracking:
             self.times_used += 1
-        assert self.get_arg_count() == len(args)
         return self.function(*args) * self.negate_multiplier
 
     def get_arg_count(self) -> int:
@@ -97,6 +96,18 @@ class CachedFunction(Function):
         result = super().apply(*args)
         self.cache[args] = result
         return result
+
+
+class BoundedFunction(Function):
+    def __init__(self, function: Callable[..., float], lower_bound: tuple[float, ...], upper_bound: tuple[float, ...]):
+        super().__init__(function)
+        self.lower_bound = lower_bound
+        self.upper_bound = upper_bound
+
+    def apply(self, *args: float) -> float:
+        if sum([int(args[i] < self.lower_bound[i] or args[i] > self.upper_bound[i]) for i in range(len(args))]) > 0:
+            return 0
+        return super().apply(*args)
 
 
 class NoiseFunction(CachedFunction):
