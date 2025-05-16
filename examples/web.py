@@ -14,20 +14,22 @@ def get_default_optimizer():
     return optimizer
 
 
-LOWER_BOUND = 40.0
-UPPER_BOUND = 43.0
-INDENT = 0.1
+LOWER_BOUND_X = 26
+UPPER_BOUND_X = 28
+LOWER_BOUND_Y = 86
+UPPER_BOUND_Y = 88
+INDENT = 1
 
 
 def get_client() -> TerrainClient | None:
     client = TerrainClient()
 
     success = client.create_model(
-        lat=LOWER_BOUND - INDENT,
-        lon=LOWER_BOUND - INDENT,
-        lat_end=UPPER_BOUND + INDENT,
-        lon_end=UPPER_BOUND + INDENT,
-        model_name="Caucasus"
+        lat=LOWER_BOUND_X - INDENT,
+        lon=LOWER_BOUND_Y - INDENT,
+        lat_end=UPPER_BOUND_X + INDENT,
+        lon_end=UPPER_BOUND_Y + INDENT,
+        model_name="Everest"
     )
 
     if not success:
@@ -47,15 +49,15 @@ def main():
         return
     func: DerivableFunction = AutomatedDerivableFunction(
         CachedFunction(
-            lambda x, y: client.get_elevation(min_max(x, LOWER_BOUND, UPPER_BOUND),
-                                              min_max(y, LOWER_BOUND, UPPER_BOUND))), 1)
-    start_point: tuple[float, float] = (40.00, 41.30)
-    lower_bound = (LOWER_BOUND, LOWER_BOUND)
-    upper_bound = (UPPER_BOUND, UPPER_BOUND)
+            lambda x, y: client.get_elevation(min_max(x, LOWER_BOUND_X, UPPER_BOUND_X),
+                                              min_max(y, LOWER_BOUND_Y, UPPER_BOUND_Y))), 1)
+    start_point: tuple[float, float] = (27, 86)
+    lower_bound = (LOWER_BOUND_X, LOWER_BOUND_Y)
+    upper_bound = (UPPER_BOUND_X, UPPER_BOUND_Y)
 
     report: Report = optimizer.optimize(func, start_point, lower_bound, upper_bound, maximum=True)
 
-    print(f"Local peak: {report.get_raw_tracking()[-1]}")
+    print(f"Path: {report.get_raw_tracking()}")
 
 
 if __name__ == '__main__':
