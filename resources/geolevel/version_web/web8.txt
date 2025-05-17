@@ -1,0 +1,65 @@
+from src.external.terrain_client import TerrainClient
+from src.functions import DerivableFunction, AutomatedDerivableFunction, Function, CachedFunction
+from src.report import Report
+from src.break_checker import BreakChecker, ArgumentAbsoluteBreakChecker, NeverBreakChecker
+from src.gradient_optimizer import GradientOptimizer
+from src.scheduler import Scheduler, GolderRatioScheduler
+
+
+def get_default_optimizer():
+    scheduler: Scheduler = GolderRatioScheduler(0.006, 20)  # Set learning rate strategy
+    break_checker: BreakChecker = ArgumentAbsoluteBreakChecker(0.1)  # Set breakpoint condition checking
+    optimizer: GradientOptimizer = GradientOptimizer(scheduler, break_checker,
+                                                     limit=100)  # Combine all above into gradient optimizer
+    return optimizer
+
+
+LOWER_BOUND_X = -4
+UPPER_BOUND_X = -1
+LOWER_BOUND_Y = 36
+UPPER_BOUND_Y = 39
+INDENT = 1
+
+
+def get_client() -> TerrainClient | None:
+    client = TerrainClient()
+
+    success = client.create_model(
+        lat=LOWER_BOUND_X - INDENT,
+        lon=LOWER_BOUND_Y - INDENT,
+        lat_end=UPPER_BOUND_X + INDENT,
+        lon_end=UPPER_BOUND_Y + INDENT,
+        model_name="Kilimanjaro"
+    )
+
+    if not success:
+        return None
+
+    return client
+
+
+def min_max(a: float, mn: float, mx: float) -> float:
+    return min(max(a, mn), mx)
+
+
+def main():
+    optimizer: GradientOptimizer = get_default_optimizer()
+    client = get_client()
+    if client is None:
+        return
+    func: DerivableFunction = AutomatedDerivableFunction(
+        CachedFunction(
+            lambda x, y: client.get_elevation(min_max(x, LOWER_BOUND_X, UPPER_BOUND_X),
+                                              min_max(y, LOWER_BOUND_Y, UPPER_BOUND_Y))), 1)
+    start_point: tuple[float, float] = -3.314, 37.331
+
+    lower_bound = (LOWER_BOUND_X, LOWER_BOUND_Y)
+    upper_bound = (UPPER_BOUND_X, UPPER_BOUND_Y)
+
+    report: Report = optimizer.optimize(func, start_point, lower_bound, upper_bound, maximum=True)
+
+    print(f"Path: {report.get_raw_tracking()}")
+
+
+if __name__ == '__main__':
+    main()
