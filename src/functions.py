@@ -50,8 +50,7 @@ class HyperFunction(Function):
     def apply(self, *args: float) -> float:
         if self.tracking:
             self.times_used += 1
-        a = self.function(self.object, self.property, *args)
-        return a
+        return self.function(self.object, self.property, *args)
 
 
 class DerivableFunction(Function):
@@ -82,12 +81,8 @@ class DerivableFunction(Function):
 class AutomatedDerivableFunction(DerivableFunction):
     @staticmethod
     def _get_partial(function: Function, x: tuple[float, ...], coord: int, epsilon: float):
-        print("coord:", coord)
         x_shift = x[:coord] + (x[coord] + epsilon,) + x[coord + 1:]
-        a = function.apply(*x_shift)
-        a2 = function.apply(*x)
-        b = (a - a2)/ epsilon
-        return b
+        return (function.apply(*x_shift) - function.apply(*x)) / epsilon
 
     def __init__(self, function: Function, derivableStart: bool = True, epsilon: float = 10 ** -8):
         super().__init__(function.apply,
@@ -100,6 +95,7 @@ class AutomatedDerivableFunction(DerivableFunction):
     def get_arg_count(self) -> int:
         return self.__arg_count
 
+
 class BatchAutomatedDerivableFunction(AutomatedDerivableFunction):
     def __init__(self, function: HyperFunction, objects: tuple[tuple[float, ...], float], epsilon: float = 10 ** -8):
         super().__init__(function, False)
@@ -107,19 +103,15 @@ class BatchAutomatedDerivableFunction(AutomatedDerivableFunction):
         self.function = function
         self.epsilon = epsilon
 
-
     def get_batch_gradient_at(self, object_numbers: set[int], hypo_parameters: tuple[float, ...]) -> tuple[float, ...]:
         if self.tracking:
             self.times_gradient_used += 1
         gradients = []
-        for i in range(len(self.objects)):
-            if i in object_numbers:
-                self.function.set_object(self.objects[i][0], self.objects[i][1])
-                gr_for_object = []
-                for j in range(0, len(hypo_parameters)):
-                    gr_for_object.append(
-                    lambda *x: AutomatedDerivableFunction._get_partial(self.function, x, copy(j), self.epsilon))
-                gradients.append(tuple(dF(*hypo_parameters) for dF in gr_for_object))
+        for i in object_numbers:
+            self.function.set_object(self.objects[i][0], self.objects[i][1])
+            gradient_for_object=tuple(AutomatedDerivableFunction._get_partial(self.function, hypo_parameters, j, self.epsilon)
+                                for j in range(len(hypo_parameters)))
+            gradients.append(gradient_for_object)
 
         return tuple(sum(elements) for elements in zip(*gradients))
 
