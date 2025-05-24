@@ -1,15 +1,16 @@
 from abc import ABC, abstractmethod
 from typing import Callable
 
-from src.functions import DerivableFunction
+from src.functions import DirectionalFunction
 import math
 
 
 class Scheduler(ABC):
     __AUXILIARY_PREFIX = "aux_"
 
-    def get_step_value(self, current_argument: tuple[float, ...], iteration_number: int,
-                       func: DerivableFunction) -> float:
+    @abstractmethod
+    def get_step_value(self, iteration_number: int,
+                       func: DirectionalFunction) -> float:
         return 0
 
     def get_hyper_parameters(self) -> dict[str, float]:
@@ -26,8 +27,7 @@ class ExponentialDecayScheduler(Scheduler):
         self.step0 = step0
         self.lamda = lamda
 
-    def get_step_value(self, current_argument: tuple[float, ...], iteration_number: int,
-                       func: DerivableFunction) -> float:
+    def get_step_value(self, iteration_number: int, func: DirectionalFunction) -> float:
         return self.step0 * math.exp(-self.lamda * iteration_number)
 
 
@@ -37,8 +37,7 @@ class PolynomialDecayScheduler(Scheduler):
         self.alpha = alpha
         self.beta = beta
 
-    def get_step_value(self, current_argument: tuple[float, ...], iteration_number: int,
-                       func: DerivableFunction) -> float:
+    def get_step_value(self, iteration_number: int, func: DirectionalFunction) -> float:
         h0 = 1 / math.sqrt(iteration_number + 1)
         return h0 * ((self.beta * iteration_number + 1) ** -self.alpha)
 
@@ -48,13 +47,12 @@ class SegmentScheduler(Scheduler, ABC):
         self.indent = indent
         self.count_iterations = count_iterations
 
-    def get_step_value(self, current_argument: tuple[float, ...], iteration_number: int,
-                       func: DerivableFunction) -> float:
+    def get_step_value(self, iteration_number: int, func: DirectionalFunction) -> float:
         arg1, arg2 = self.indent, -self.indent
-        return self._min_per_segment(func.get_func_cross_section(current_argument), arg1, arg2)
+        return self._min_per_segment(func, arg1, arg2)
 
     @abstractmethod
-    def _min_per_segment(self, func: Callable[[float], float], a: float, b: float) -> float:
+    def _min_per_segment(self, func: DirectionalFunction, a: float, b: float) -> float:
         pass
 
 
@@ -63,16 +61,16 @@ class DichotomyScheduler(SegmentScheduler):
     def __get_middle(a: float, b: float) -> float:
         return a + (b - a) / 2
 
-    def _min_per_segment(self, func: Callable[[float], float], a: float, b: float) -> float:
+    def _min_per_segment(self, func: DirectionalFunction, a: float, b: float) -> float:
         n = self.count_iterations
         calc = True
         for i in range(n):
             if calc:
                 mid = DichotomyScheduler.__get_middle(a, b)
-                val_m = func(mid)
+                val_m = func.apply(mid)
 
             left_mid = DichotomyScheduler.__get_middle(a, mid)
-            val_lm = func(left_mid)
+            val_lm = func.apply(left_mid)
             if val_lm < val_m:
                 b = mid
                 mid = left_mid
@@ -81,7 +79,7 @@ class DichotomyScheduler(SegmentScheduler):
                 continue
 
             right_mid = DichotomyScheduler.__get_middle(mid, b)
-            val_rm = func(right_mid)
+            val_rm = func.apply(right_mid)
             if val_rm < val_m:
                 a = mid
                 mid = right_mid
@@ -100,24 +98,24 @@ class GolderRatioScheduler(SegmentScheduler):
     __LEFT_INDENT = 0.382
     __RIGHT_INDENT = 1 - __LEFT_INDENT
 
-    def _min_per_segment(self, func: Callable[[float], float], a: float, b: float) -> float:
+    def _min_per_segment(self, func: DirectionalFunction, a: float, b: float) -> float:
         n = self.count_iterations
         delta = b - a
         c = a + GolderRatioScheduler.__LEFT_INDENT * delta
         d = a + GolderRatioScheduler.__RIGHT_INDENT * delta
-        val_c = func(c)
-        val_d = func(d)
+        val_c = func.apply(c)
+        val_d = func.apply(d)
         for i in range(n):
             if val_c <= val_d:
                 b = d
                 d = c
                 c = a + GolderRatioScheduler.__LEFT_INDENT * (b - a)
-                val_d, val_c = val_c, func(c)
+                val_d, val_c = val_c, func.apply(c)
                 continue
 
             a = c
             c = d
             d = a + GolderRatioScheduler.__RIGHT_INDENT * (b - a)
-            val_c, val_d = val_d, func(d)
+            val_c, val_d = val_d, func.apply(d)
 
         return c if val_c <= val_d else d
