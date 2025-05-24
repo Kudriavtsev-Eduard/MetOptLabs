@@ -1,7 +1,6 @@
 import copy
 import random
-import typing
-from typing import Callable, override
+from typing import Callable, Sequence, override
 import src.utilities as utilities
 
 """
@@ -105,7 +104,7 @@ class AutomatedDerivableFunction(DerivableFunction):
 
 
 class BatchAutomatedDerivableFunction(AutomatedDerivableFunction):
-    def __init__(self, function: HyperFunction, objects: typing.Sequence[tuple[tuple[float, ...], float]],
+    def __init__(self, function: HyperFunction, objects: Sequence[tuple[tuple[float, ...], float]],
                  batch_size: int, epsilon: float = 10 ** -8):
         super().__init__(function, False)
         self.objects = objects
@@ -113,7 +112,7 @@ class BatchAutomatedDerivableFunction(AutomatedDerivableFunction):
         self.epsilon = epsilon
         self.batch_size = batch_size
         self.batch_choices = list(range(len(objects)))
-        self.batch_choice = random.sample(self.batch_choices, batch_size)
+        self.__new_batch()
 
     def get_batch_gradient_at(self, object_numbers: list[int], hyper_parameters: tuple[float, ...]) -> (
             tuple)[float, ...]:
@@ -142,7 +141,7 @@ class BatchAutomatedDerivableFunction(AutomatedDerivableFunction):
         for batch_num in batch_numbers:
             self.function.set_object(self.objects[batch_num][0], self.objects[batch_num][1])
             result += self.function.apply(*point)
-        return result
+        return result / max(len(batch_numbers), 1)
 
     @override
     def get_gradient_at(self, *args: float) -> tuple[float, ...]:
