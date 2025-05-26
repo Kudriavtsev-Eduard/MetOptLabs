@@ -26,10 +26,11 @@ class GradientOptimizer:
         it = 0
 
         while (not self.__break_checker.is_done(tracking, func)) and it < self.__limit:
+            gradient = func.get_gradient_at(*current_point)
             current_point = (
                 utilities.element_wise_addition(
-                    current_point, func.get_gradient_at(*current_point),
-                    multiplier * self.__scheduler.get_step_value(current_point, it, func)
+                    current_point, gradient,
+                    multiplier * self.__scheduler.get_step_value(it, func.get_directional(current_point))
                 )
             )
             tracking.append(current_point)

@@ -1,6 +1,6 @@
+import copy
 import random
-from copy import copy
-from typing import Callable
+from typing import Callable, Sequence, override
 import src.utilities as utilities
 
 """
@@ -39,13 +39,25 @@ class Function:
         return {"to_function": self.times_used}
 
 
+class DirectionalFunction:
+    def __init__(self, function: Function, starting_point: tuple[float, ...], direction: tuple[float, ...]):
+        self.function = function
+        self.starting_point = starting_point
+        self.direction = direction
+
+    def apply(self, coefficient: float) -> float:
+        return self.function.apply(*utilities.element_wise_addition(self.starting_point, self.direction, -coefficient))
+
+
 class HyperFunction(Function):
     def __init__(self, function: Callable[[tuple[float, ...], float, ...], float]):
         super().__init__(function)
+        self.object = None
+        self.property = None
 
-    def set_object(self, object: tuple[float, ...], property: float):
-        self.object = object
-        self.property = property
+    def set_object(self, obj: tuple[float, ...], prop: float):
+        self.object = obj
+        self.property = prop
 
     def apply(self, *args: float) -> float:
         if self.tracking:
@@ -64,18 +76,13 @@ class DerivableFunction(Function):
             self.times_gradient_used += 1
         return tuple(dF(*args) for dF in self.gradient)
 
-    def get_func_cross_section(self, current_argument: tuple[float, ...]) -> Callable[[float], float]:
-        antigravity = utilities.multiply(self.get_gradient_at(*current_argument), -1)
-
-        def evaluteF1D(t):
-            return self.apply(*(utilities.element_wise_addition(current_argument, antigravity, t)))
-
-        return evaluteF1D
-
     def get_call_data(self) -> dict[str, int]:
         result = super().get_call_data()
         result["to_gradient"] = self.times_gradient_used
         return result
+
+    def get_directional(self, point: tuple[float, ...]) -> DirectionalFunction:
+        return DirectionalFunction(self, point, self.get_gradient_at(*point))
 
 
 class AutomatedDerivableFunction(DerivableFunction):
@@ -84,12 +91,12 @@ class AutomatedDerivableFunction(DerivableFunction):
         x_shift = x[:coord] + (x[coord] + epsilon,) + x[coord + 1:]
         return (function.apply(*x_shift) - function.apply(*x)) / epsilon
 
-    def __init__(self, function: Function, derivableStart: bool = True, epsilon: float = 10 ** -8):
+    def __init__(self, function: Function, derivable_start: bool = True, epsilon: float = 10 ** -8):
         super().__init__(function.apply,
                          tuple(
                              lambda *x: AutomatedDerivableFunction._get_partial(function, x, i, epsilon)
                              for i in range(function.get_arg_count()))
-                         if derivableStart else ())
+                         if derivable_start else ())
         self.__arg_count = function.get_arg_count()
 
     def get_arg_count(self) -> int:
@@ -97,23 +104,55 @@ class AutomatedDerivableFunction(DerivableFunction):
 
 
 class BatchAutomatedDerivableFunction(AutomatedDerivableFunction):
-    def __init__(self, function: HyperFunction, objects: tuple[tuple[float, ...], float], epsilon: float = 10 ** -8):
+    def __init__(self, function: HyperFunction, objects: Sequence[tuple[tuple[float, ...], float]],
+                 batch_size: int, epsilon: float = 10 ** -8):
         super().__init__(function, False)
         self.objects = objects
         self.function = function
         self.epsilon = epsilon
+        self.batch_size = batch_size
+        self.batch_choices = list(range(len(objects)))
+        self.__new_batch()
 
-    def get_batch_gradient_at(self, object_numbers: set[int], hypo_parameters: tuple[float, ...]) -> tuple[float, ...]:
+    def get_batch_gradient_at(self, object_numbers: list[int], hyper_parameters: tuple[float, ...]) -> (
+            tuple)[float, ...]:
         if self.tracking:
             self.times_gradient_used += 1
         gradients = []
         for i in object_numbers:
             self.function.set_object(self.objects[i][0], self.objects[i][1])
-            gradient_for_object=tuple(AutomatedDerivableFunction._get_partial(self.function, hypo_parameters, j, self.epsilon)
-                                for j in range(len(hypo_parameters)))
+            gradient_for_object = tuple(
+                AutomatedDerivableFunction._get_partial(self.function, hyper_parameters, j, self.epsilon)
+                for j in range(len(hyper_parameters)))
             gradients.append(gradient_for_object)
 
         return tuple(sum(elements) for elements in zip(*gradients))
+
+    def __new_batch(self):
+        self.batch_choice = random.sample(self.batch_choices, self.batch_size)
+
+    @override
+    def apply(self, *args: float) -> float:
+        self.__new_batch()
+        return self.__apply_batch(self.batch_choice, args)
+
+    def __apply_batch(self, batch_numbers: list[int], point: tuple[float, ...]) -> float:
+        result = 0
+        for batch_num in batch_numbers:
+            self.function.set_object(self.objects[batch_num][0], self.objects[batch_num][1])
+            result += self.function.apply(*point)
+        return result / max(len(batch_numbers), 1)
+
+    @override
+    def get_gradient_at(self, *args: float) -> tuple[float, ...]:
+        self.__new_batch()
+        return self.get_batch_gradient_at(self.batch_choice, args)
+
+    @override
+    def get_directional(self, point: tuple[float, ...]) -> DirectionalFunction:
+        to_result = Function(lambda *x: self.__apply_batch(copy.deepcopy(self.batch_choice), x))
+        grad = self.get_batch_gradient_at(self.batch_choice, point)
+        return DirectionalFunction(to_result, point, grad)
 
 
 class NoiseFunction(Function):
