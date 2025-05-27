@@ -27,16 +27,16 @@ hyperfunc = functions.HyperFunction(lambda obj, mark, w0, w1, w2, w3, w4, w5:
                                     (mark - predfunc(obj, w0, w1, w2, w3, w4, w5)) ** 2)
 
 optimizer = sgd_optimizer.StochasticGradientOptimizer(
-    scheduler.GolderRatioScheduler(0.2, 20),
-    break_checker.ArgumentAbsoluteBreakChecker(0.001),
+    scheduler.GolderRatioScheduler(5, 100),
+    break_checker.ArgumentAbsoluteBreakChecker(0.0001),
     hyperfunc,
     45)
 
 report = optimizer.optimize(
-    dataset,
+    dataset[:100],
     (0., 0., 0., 0., 0., 0.),
-    45,
-    functions.L1(6, 0.5)
+    20,
+    functions.Elastic(6, 14)
 )
 
 ans = report.get_raw_tracking()[-1]

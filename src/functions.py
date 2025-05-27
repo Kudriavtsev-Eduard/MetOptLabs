@@ -182,15 +182,20 @@ class L2(L):
 class L1(L):
     def __init__(self, arg_count: int, lamda: float):
         super().__init__(arg_count, lamda, (lambda *args: (lamda * sum(map((lambda x: abs(x)), args[1:]))) / 2),
-                         tuple((lambda *w: lamda * L1.__sign(w[i])) for i in range(arg_count)))
+                         tuple((lambda *w: lamda * L1.sign(w[i])) for i in range(arg_count)))
 
     @staticmethod
-    def __sign(a: int) -> int:
+    def sign(a: int) -> int:
         if a < 0:
             return -1
         if a == 0:
             return 0
         return 1
+
+class Elastic(L):
+    def __init__(self, arg_count: int, lamda: float):
+        super().__init__(arg_count, lamda, (lambda *args: (lamda * sum(map((lambda x: x ** 2 + abs(x)), args[1:]))) / 2),
+                         tuple((lambda *w: lamda * w[i] * L1.sign(w[i])) for i in range(arg_count)))
 
 
 class NoiseFunction(Function):
