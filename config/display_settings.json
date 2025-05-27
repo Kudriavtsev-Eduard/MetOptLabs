@@ -25,6 +25,25 @@
     "level_line_indent": 5,
     "opacity": 0.5
   },
+  "error_comparison": {
+    "graph": {
+      "scatter_mode": "markers+lines",
+      "error_line_color": "MediumAquaMarine",
+      "data_line_color": "Salmon",
+      "error_graph_name": "Diff",
+      "data_graph_name": "Data",
+      "zero_line_dash": "dash"
+    },
+    "alignment": {
+      "row_heights": [
+        0.3,
+        0.7
+      ],
+      "vertical_spacing": 0.05,
+      "specs": [[{"type": "table"}], [{"type": "xy"}]],
+      "subplot_titles": ["SGD parameters:", "Data and error graphs:"]
+    }
+  },
   "trace": {
     "default_marker": "circle",
     "special_marker": "diamond",

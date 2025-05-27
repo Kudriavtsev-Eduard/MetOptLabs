@@ -1,8 +1,10 @@
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Sequence, Callable
 
 import plotly.graph_objects as go
 import json
+
+from plotly.subplots import make_subplots
 
 from src.functions import Function
 
@@ -35,6 +37,48 @@ class Report:
             case _:
                 raise NotImplementedError("Report supports only functions with 2 args.")
 
+    def display_dataset_comparison(self, dataset: Sequence[tuple[tuple[float, ...], float]], predfunc: Callable) -> None:
+        assert dataset is not None
+        self._build_comparison_graph(dataset, predfunc)
+
+    def _build_comparison_graph(self, dataset: Sequence[tuple[tuple[float, ...], float]], predfunc: Callable) -> None:
+        w = self._tracking[-1]
+        settings = self._get_settings("error_comparison")
+        graph_settings = settings["graph"]
+        alignment_settings = settings["alignment"]
+        fig = (make_subplots(
+            row_heights=alignment_settings["row_heights"],
+            vertical_spacing=alignment_settings["vertical_spacing"],
+            specs=alignment_settings["specs"],
+            subplot_titles=alignment_settings["subplot_titles"],
+            rows=2, cols=1)
+            .update_layout(
+                xaxis_title='INDEX',
+                yaxis_title='MARK VALUE',
+                autosize=True)
+            .add_hline(
+                line_dash=graph_settings["zero_line_dash"],
+                annotation_text="ZERO",
+                y=0,
+                row=2, col=1
+            )
+            .add_trace(
+                self._get_dataset_trace(dataset, graph_settings),
+                row=2, col=1
+            )
+            .add_trace(
+                self._get_dataset_error_trace(dataset, tuple(w), predfunc, graph_settings),
+                row=2, col=1
+            )
+            .add_trace(
+                self._get_table(self._get_settings("table")),
+                row=1, col=1
+            )
+        )
+        for ann in fig.layout.annotations:
+            ann.update(xref='x domain', x=0, xanchor='left')
+        fig.show(renderer="browser")
+
     def get_raw_tracking(self) -> list[tuple[float, ...]]:
         return self._tracking
 
@@ -49,10 +93,10 @@ class Report:
     def _get_max_column_proportion(lst: list[list[str]], column: int) -> int:
         return max(map(len, map(lambda pair: pair[column], lst)))
 
-    def _get_settings(self, parent_dict: str) -> dict[str, Any]:
-        if parent_dict not in self._config:
-            raise KeyError("No parent dict with name " + parent_dict)
-        return self._config.get(parent_dict)
+    def _get_settings(self, dict_name: str) -> dict[str, Any]:
+        if dict_name not in self._config:
+            raise KeyError("No parent dict with name " + dict_name)
+        return self._config.get(dict_name)
 
     def _build_3d_graph(self) -> None:
         fig = (
@@ -128,6 +172,29 @@ class Report:
             mode=settings["scatter_mode"],
             marker=marker_settings,
             line=settings["line_params"]
+        )
+
+    def _get_dataset_trace(self, dataset: Sequence[tuple[tuple[float, ...], float]],
+                           settings: dict[str, Any]) -> go.Scatter:
+        dataset_len = len(dataset)
+        return go.Scatter(
+            x=list(range(dataset_len)),
+            y=[dataset[i][1] for i in range(dataset_len)],
+            mode=settings["scatter_mode"],
+            line_color=settings["data_line_color"],
+            name=settings["data_graph_name"]
+        )
+
+    def _get_dataset_error_trace(self, dataset: Sequence[tuple[tuple[float, ...], float]],
+                                 w: tuple[float, ...],
+                                 predfunc: Callable,
+                                 settings: dict[str, Any]) -> go.Scatter:
+        return go.Scatter(
+            x=list(range(len(dataset))),
+            y=[expected - predfunc(obj, *w) for obj, expected in dataset],
+            mode=settings["scatter_mode"],
+            line_color=settings["error_line_color"],
+            name=settings["error_graph_name"]
         )
 
 # report = Report(Function(
