@@ -35,7 +35,8 @@ optimizer = sgd_optimizer.StochasticGradientOptimizer(
 report = optimizer.optimize(
     dataset,
     (0., 0., 0., 0., 0., 0.),
-    45
+    45,
+    functions.L1(6, 0.5)
 )
 
 ans = report.get_raw_tracking()[-1]
