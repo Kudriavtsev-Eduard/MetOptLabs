@@ -1,5 +1,6 @@
 import copy
 import random
+from abc import ABC
 from typing import Callable, Sequence, override
 import src.utilities as utilities
 
@@ -21,7 +22,6 @@ class Function:
         self.times_used = 0
 
     def apply(self, *args: float) -> float:
-        assert self.get_arg_count() == len(args)
         if self.tracking:
             self.times_used += 1
         return self.function(*args)
@@ -64,17 +64,21 @@ class HyperFunction(Function):
             self.times_used += 1
         return self.function(self.object, self.property, *args)
 
+    @override
+    def get_arg_count(self):
+        return super().get_arg_count() - 1
+
 
 class DerivableFunction(Function):
     def __init__(self, function: Callable[..., float], gradient: tuple[Callable[..., float], ...]):
         super().__init__(function)
-        self.gradient = gradient
+        self._gradient = gradient
         self.times_gradient_used = False
 
     def get_gradient_at(self, *args: float) -> tuple[float, ...]:
         if self.tracking:
             self.times_gradient_used += 1
-        return tuple(dF(*args) for dF in self.gradient)
+        return tuple(dF(*args) for dF in self._gradient)
 
     def get_call_data(self) -> dict[str, int]:
         result = super().get_call_data()
@@ -83,6 +87,12 @@ class DerivableFunction(Function):
 
     def get_directional(self, point: tuple[float, ...]) -> DirectionalFunction:
         return DirectionalFunction(self, point, self.get_gradient_at(*point))
+
+
+class SumFunction(DerivableFunction):
+    def __init__(self, f1: DerivableFunction, f2: DerivableFunction):
+        new_gradient = tuple((lambda *args: g1(args) + g2(args)) for g1, g2 in zip(f1._gradient, f2._gradient))
+        super().__init__((lambda *args: f1.apply(*args) + f2.apply(*args)), new_gradient)
 
 
 class AutomatedDerivableFunction(DerivableFunction):
@@ -153,6 +163,38 @@ class BatchAutomatedDerivableFunction(AutomatedDerivableFunction):
         to_result = Function(lambda *x: self.__apply_batch(copy.deepcopy(self.batch_choice), x))
         grad = self.get_batch_gradient_at(self.batch_choice, point)
         return DirectionalFunction(to_result, point, grad)
+
+
+class L(DerivableFunction, ABC):
+    def __init__(self, arg_count: int, lamda: float, function: Callable[..., float],
+                 gradient: tuple[Callable[..., float], ...]):
+        super().__init__(function, gradient)
+        self.arg_count = arg_count
+        self.lamda = lamda
+
+    @override
+    def get_arg_count(self) -> int:
+        return self.arg_count
+
+
+class L2(L):
+    def __init__(self, arg_count: int, lamda: float):
+        super().__init__(arg_count, lamda, (lambda *args: (lamda * sum(map((lambda x: x ** 2), args[1:]))) / 2),
+                         tuple([(lambda w: lamda * w)] * arg_count))
+
+
+class L1(L):
+    def __init__(self, arg_count: int, lamda: float):
+        super().__init__(arg_count, lamda, (lambda *args: (lamda * sum(map((lambda x: abs(x)), args[1:]))) / 2),
+                         tuple([(lambda w: lamda * L1.__sign(w))] * arg_count))
+
+    @staticmethod
+    def __sign(w: int) -> int:
+        if w < 0:
+            return -1
+        if w == 0:
+            return 0
+        return 1
 
 
 class NoiseFunction(Function):

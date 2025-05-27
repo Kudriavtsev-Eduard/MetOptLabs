@@ -12,7 +12,6 @@ class GradientOptimizer:
         self.__limit = limit
 
     def optimize(self, func: DerivableFunction, starting_point: tuple[float, ...] | None = None) -> Report:
-        assert starting_point is None or len(starting_point) == func.get_arg_count()
         func.start_tracking()
 
         multiplier = -1
