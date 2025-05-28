@@ -24,6 +24,7 @@ class Report:
     _hyperparameters: dict[str, float]
     _strategy_name: str
     _mean_error_value: float = None
+    _func_calls: float = None
     _config_path: str = DEFAULT_CONFIG_PATH
     _config: dict = field(init=False)
 
@@ -132,15 +133,17 @@ class Report:
     def _get_table(self, settings: dict[str, Any]) -> go.Table:
         table_values = [
             ["Iterations", f"{len(self._tracking) - 1}"],
-            ["Function call data", f"{", ".join(f"{k}={v}" for k, v in self._func.get_call_data().items())}"],
-            # ["Begin point", self._format_point(self._tracking[0])],
+            ["Function call data", f"{"times=" + str(self._func_calls)
+            if self._func_calls is not None
+            else ", ".join(f"{k}={v}" for k, v in self._func.get_call_data().items() if v != 0)}"],
+            ["Begin point", self._format_point(self._tracking[0])],
             # ["Begin F", self._format_precision(self._func.apply(*self._tracking[0]))],
             # ["Min F", self._format_precision(self._func.apply(*self._tracking[-1]))],
             ["Argmin F", self._format_point(self._tracking[-1])],
-            # ["Strategy", self._strategy_name],
+            ["Strategy", self._strategy_name],
             # ["Aborted?", "YES" if self._is_aborted else "NO"],
             ["Hyperparameters", ", ".join(f"{k}={self._format_precision(v)}" for k, v in self._hyperparameters.items())],
-            ["Mean error value", str(self._mean_error_value)]
+            ["Absolute mean error value", self._format_precision(self._mean_error_value)]
             if self._mean_error_value is not None else []
         ]
         if len(table_values[-1]) == 0:
