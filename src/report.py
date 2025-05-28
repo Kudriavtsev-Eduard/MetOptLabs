@@ -23,6 +23,7 @@ class Report:
     _is_aborted: bool
     _hyperparameters: dict[str, float]
     _strategy_name: str
+    _mean_error_value: float = None
     _config_path: str = DEFAULT_CONFIG_PATH
     _config: dict = field(init=False)
 
@@ -132,14 +133,18 @@ class Report:
         table_values = [
             ["Iterations", f"{len(self._tracking) - 1}"],
             ["Function call data", f"{", ".join(f"{k}={v}" for k, v in self._func.get_call_data().items())}"],
-            ["Begin point", self._format_point(self._tracking[0])],
-            ["Begin F", self._format_precision(self._func.apply(*self._tracking[0]))],
-            ["Min F", self._format_precision(self._func.apply(*self._tracking[-1]))],
+            # ["Begin point", self._format_point(self._tracking[0])],
+            # ["Begin F", self._format_precision(self._func.apply(*self._tracking[0]))],
+            # ["Min F", self._format_precision(self._func.apply(*self._tracking[-1]))],
             ["Argmin F", self._format_point(self._tracking[-1])],
-            ["Strategy", self._strategy_name],
-            ["Aborted?", "YES" if self._is_aborted else "NO"],
-            ["Hyperparameters", ", ".join(f"{k}={self._format_precision(v)}" for k, v in self._hyperparameters.items())]
+            # ["Strategy", self._strategy_name],
+            # ["Aborted?", "YES" if self._is_aborted else "NO"],
+            ["Hyperparameters", ", ".join(f"{k}={self._format_precision(v)}" for k, v in self._hyperparameters.items())],
+            ["Mean error value", str(self._mean_error_value)]
+            if self._mean_error_value is not None else []
         ]
+        if len(table_values[-1]) == 0:
+            table_values.pop()
 
         x_alignment = settings["x_alignment"]
         proportions = [self._get_max_column_proportion(table_values, i) for i in range(2)]
@@ -173,7 +178,6 @@ class Report:
             marker=marker_settings,
             line=settings["line_params"]
         )
-
     def _get_dataset_trace(self, dataset: Sequence[tuple[tuple[float, ...], float]],
                            settings: dict[str, Any]) -> go.Scatter:
         dataset_len = len(dataset)
