@@ -39,12 +39,5 @@ report = optimizer.optimize(
     functions.Elastic(6, 14)
 )
 
-ans = report.get_raw_tracking()[-1]
-
-### comparison in console
-# for pair in dataset:
-#     obj = pair[0]
-#     y = pair[1]
-#     print("expected:", y, "actual:", predfunc(obj, ans[0], ans[1], ans[2], ans[3], ans[4], ans[5]))
-
 report.display_dataset_comparison(dataset, predfunc)
+
