@@ -13,6 +13,7 @@ class StochasticGradientOptimizer:
         self.hyper_func = hyper_func
 
     def optimize(self, dataset: typing.Sequence[tuple[tuple[float, ...], float]], hyperparams_begin: tuple[float, ...],
-                 batch_size: int, regular_func: DerivableFunction) -> Report:
+                 batch_size: int, regular_func: DerivableFunction):
         to_optimize = BatchAutomatedDerivableFunction(self.hyper_func, dataset, batch_size, regular_func)
-        return self.grad_optimizer.optimize(to_optimize, hyperparams_begin)
+        r = self.grad_optimizer.optimize(to_optimize, hyperparams_begin)
+        return r, to_optimize.times_used

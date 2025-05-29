@@ -4,13 +4,8 @@ from ucimlrepo import fetch_ucirepo
 from torch.utils.data import TensorDataset, DataLoader
 
 import torch
-import sgd_optimizer
-import functions
 import pandas
-import scheduler
-import break_checker
-import report
-
+from src import functions, sgd_optimizer, scheduler, break_checker, report
 
 ### dataset
 student_performance = fetch_ucirepo(id=320)
