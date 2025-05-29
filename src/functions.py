@@ -142,6 +142,7 @@ class BatchAutomatedDerivableFunction(AutomatedDerivableFunction):
 
     def __apply_batch(self, batch_numbers: list[int], point: tuple[float, ...]) -> float:
         result = 0
+        self.times_used += 1
         for batch_num in batch_numbers:
             self.function.set_object(self.objects[batch_num][0], self.objects[batch_num][1])
             result += self.function.apply(*point)
